@@ -1,4 +1,4 @@
-# results functions 
+# Seibert MS 2021 - 2023 results functions 
 
 import os
 import pandas as pd
@@ -35,22 +35,25 @@ def stack_its(file_path, final_csv_name):
 
 def load_and_filter(results_path, column_name, column_name_type, exclude = False):
     """
-    Perform an ordinary least squares regression analysis on data
+    load and filter a csv (to filter a dataframe, see filter_df function below)
     
     Parameters
     ----------------
-    reg_data: 
-        the data to be used with the regression
-        type: variable containing a file path read as a csv
-    ind_var_name:
-        name of the independent variable column 
-        type: column of the dataframe as dataframe.column
-    dep_var_name:
-        name of the dependent variable column
-        type: column of the dataframe as dataframe.column
+    results_path: 
+        where the csv is located
+        type: string location
+    column_name: 
+        name of the column which the data will be filtered by
+        type: column label as a string, ex: species or year
+    column_name_type:
+        category of the column which the data will be filtered by
+        type: column label category, ex: larch or 2015 
+    exclude:
+        determines whether to exclude the designated data type or filter by it
+        type: boolean phrase, True or False
     Returns
     ----------------
-    summary of the regression results
+    filtered dataframe from a csv file
     """
     df_unfiltered = pd.read_csv(results_path)
     if exclude:
@@ -60,6 +63,27 @@ def load_and_filter(results_path, column_name, column_name_type, exclude = False
     return df_filtered
 
 def filter_df(dataframe, column_name, column_name_type, exclude = False):
+    """
+    filter a dataframe
+    
+    Parameters
+    ----------------
+    dataframe: 
+        the dataframe
+        type: pandas dataframe
+    column_name: 
+        name of the column which the data will be filtered by
+        type: column label as a string, ex: species or year
+    column_name_type:
+        category of the column which the data will be filtered by
+        type: column label category, ex: larch or 2015 
+    exclude:
+        determines whether to exclude the designated data type or filter by it
+        type: boolean phrase, True or False, default is False
+    Returns
+    ----------------
+    filtered dataframe from a pandas dataframe
+    """
     if exclude:
         df_filtered = dataframe[dataframe[column_name] != column_name_type]
     else:
@@ -169,6 +193,23 @@ def LAI_hist_plot(hist_data):
     return LAI_histogram
 
 def LAI_lineplot(line_data, line_palette):
+    """
+    Plot line plot of LAI data
+    
+    Parameters
+    ----------------
+    line_data:
+        the dataframe to generate the line plots
+    type:
+        pandas dataframe
+    line_palette:
+        the palette you would like to use to color the lines
+    type:
+        string of color codes
+    Returns
+    ----------------
+    LAI line plot
+    """
     plt.figure(dpi= 1200, figsize = (10,6))
     LAI_species_lineplot = sns.lineplot(data=line_data, x="year", y= 'LAI', hue = 'species', 
                                         style = 'carbon dioxide', palette = line_palette, marker = 'o', err_style = 'bars', markersize= 8)
