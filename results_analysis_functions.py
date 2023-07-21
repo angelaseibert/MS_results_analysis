@@ -93,6 +93,22 @@ def filter_df(dataframe, column_name, column_name_type, exclude = False):
         df_filtered = dataframe[dataframe[column_name] == column_name_type]
     return df_filtered
 
+def readfiles(filepath, unique_id):
+    # unique_id will be either eco2 or aco2
+    # filepath = filepath containing the files of interest
+    
+    file_list = os.listdir(filepath)
+    print(file_list)
+    dataframes_list_var = []
+    
+    for file in file_list:
+        if unique_id in file:
+            final_file_path = os.path.join(filepath, file)
+            dataframe = pd.read_csv(final_file_path)
+            dataframes_list_var.append(dataframe)
+    return dataframes_list_var
+            
+
 def regression_analysis(reg_data, ind_var_name, dep_var_name):
     """
     Perform an ordinary least squares regression analysis on data
