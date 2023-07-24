@@ -290,12 +290,29 @@ def LAInormal_timeseries (normal_df, legend_title, line_palette):
     plt.figure(dpi= 1200, figsize = (10,6))
     LAI_normtimeseries = sns.lineplot(data=normal_df, x="year", y= 'LAI', 
                                       hue_order = ['0','2.25','4.5','6.75','9','control'], hue = 'temp', palette = line_palette)
-    plt.ylabel("Normalized Leaf Area Index (m${}^2$/m${}^2$)", fontsize = 14);
+    plt.ylabel('Normalized Leaf Area Index (m${}^2$/m${}^2$)', fontsize = 14);
     plt.xlabel("Year", fontsize = 14);
-    plt.legend(title= legend_title, loc='best')
+    plt.legend(title = legend_title, loc='best')
     plt.plot()
     plt.ylim(0, 1)
     return LAI_normtimeseries
 
+
+def LAInormal_sp_timeseries (normal_df, legend_title, y_title, line_palette, what_style):
+    plt.figure(dpi= 1200, figsize = (10,6))
+    LAI_norm_spr_timeseries = sns.lineplot(data=normal_df, x="year", y= 'LAI', 
+                                      hue_order = ['0','2.25','4.5','6.75','9','control'], hue = 'temp', linestyle = what_style, 
+                                      palette = line_palette)
+    plt.ylabel(y_title, fontsize = 14);
+    plt.xlabel("Year", fontsize = 14);
+    legend = plt.legend(title = legend_title, loc='best')
+    
+    styleofline = 'dashed'
+    for lines in legend.get_lines():
+        lines.set_linestyle(styleofline)
+        
+    plt.plot()
+    plt.ylim(0, 1)
+    return LAI_norm_spr_timeseries
 
 
