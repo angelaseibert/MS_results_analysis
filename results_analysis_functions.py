@@ -94,6 +94,21 @@ def filter_df(dataframe, column_name, column_name_type, exclude = False):
     return df_filtered
 
 def readfiles(filepath, unique_id):
+    """
+    read in csv files with a unique part of their name
+    
+    Parameters
+    ----------------
+    filepath: 
+        the filepath to the files of interest
+        type: string
+    unique_id: 
+        part of the file names that is unique, useful if you need subset of csv files from folder
+        type: string
+    Returns
+    ----------------
+    list of dataframes
+    """
     # unique_id will be either eco2 or aco2
     # filepath = filepath containing the files of interest
     
@@ -211,7 +226,8 @@ def LAI_hist_plot(hist_data):
     
     return LAI_histogram
 
-def LAI_lineplot(line_data, line_palette):
+def LAI_lineplot(line_data, line_palette, legend_placement):
+
     """
     Plot line plot of LAI data
     
@@ -225,6 +241,10 @@ def LAI_lineplot(line_data, line_palette):
         the palette you would like to use to color the lines
     type:
         string of color codes
+    legend_placement: 
+        where the legend should go
+    type:
+        string with locations, examples: 'best', 'center right' 
     Returns
     ----------------
     LAI line plot
@@ -234,7 +254,46 @@ def LAI_lineplot(line_data, line_palette):
                                         style = 'carbon dioxide', palette = line_palette, marker = 'o', err_style = 'bars', markersize= 8)
     plt.xlabel("Years", fontsize = 14)
     plt.ylabel("LAI (m${}^2$/m${}^2$)", fontsize = 14)
-    sns.move_legend(LAI_species_lineplot, "best")
+    sns.move_legend(LAI_species_lineplot, legend_placement)
+    return LAI_species_lineplot
+
+def LAI_lineplot_manlegend(line_data, line_palette, legend_placement, coordx, coordy):
+
+    """
+    Plot line plot of LAI data
+    
+    Parameters
+    ----------------
+    line_data:
+        the dataframe to generate the line plots
+    type:
+        pandas dataframe
+    line_palette:
+        the palette you would like to use to color the lines
+    type:
+        string of color codes
+    legend_placement: 
+        where the legend should go
+    type:
+        string with locations, examples: 'best', 'center right' 
+    coordx: 
+        where the legend should go on x axis
+    type:
+        number, like 0 or 1    
+    coordy: 
+        where the legend should go on y axis
+    type:
+        number, like 0 or 1
+    Returns
+    ----------------
+    LAI line plot
+    """
+    plt.figure(dpi= 1200, figsize = (10,6))
+    LAI_species_lineplot = sns.lineplot(data=line_data, x="year", y= 'LAI', hue = 'species', 
+                                        style = 'carbon dioxide', palette = line_palette, marker = 'o', err_style = 'bars', markersize= 8)
+    plt.xlabel("Years", fontsize = 14)
+    plt.ylabel("LAI (m${}^2$/m${}^2$)", fontsize = 14)
+    sns.move_legend(LAI_species_lineplot, legend_placement, bbox_to_anchor=(coordx, coordy))
     return LAI_species_lineplot
 
 def normal_data(data_to_norm, filter_by_temp, what_temp, filter_by_co2, what_co2, cols_norm_name, file_outpath, csv_name):
@@ -286,33 +345,115 @@ def normal_data(data_to_norm, filter_by_temp, what_temp, filter_by_co2, what_co2
     warnings.filterwarnings('ignore')
     return temp_df.to_csv(file_outpath + csv_name, index = False)
 
-def LAInormal_timeseries (normal_df, legend_title, line_palette):
+def normal_data_CO2(data_to_norm, filter_by_co2, what_co2, cols_norm_name, file_outpath, csv_name):
+    """
+    Normalize a dataframe using the MinMaxScaler function from sklearn. Each group of LAI values is normalized by plot or the unique treatment conditions.
+    
+    Parameters
+    ----------------
+    data_to_norm:
+        the dataframe full of the data to normalize
+    type:
+        pandas dataframe
+    filter_by_co2:
+        the name of the co2 treatment column
+    type: 
+        string
+    what_co2:
+        the category of the data in the co2 treatment column 
+    type:
+        string, ex: 'elevated' or 'ambient'
+    cols_norm_name: 
+        the column name that contains the data you want to normalize
+    type:
+        string, ex 'LAI'
+    file_outpath:
+        filepath to output the csv file
+    type:
+        string containing a file path
+    csv_name:
+        name of the csv file you want to call the results 
+    type:
+        string with the extension .csv
+    Returns
+    ----------------
+    csv file containing LAI data normalized by plot or treatment group 
+    """
+    temp_df = filter_df(data_to_norm, filter_by_co2, what_co2, exclude = False)
+    cols_to_norm = [cols_norm_name]
+    temp_df[cols_to_norm] = MinMaxScaler().fit_transform(temp_df[cols_to_norm])
+    warnings.filterwarnings('ignore')
+    return temp_df.to_csv(file_outpath + csv_name, index = False)
+
+
+def LAInormal_timeseries (normal_df, legend_title, y_title, line_palette, what_style):
+        """
+    Generate timeseries figure grouping data by their temperature treatments
+    
+    Parameters
+    ----------------
+    normal_df: 
+        the normalized dataframe
+        type: pandas dataframe
+    legend_title:
+        title of the legend
+        type: string
+    y_title:
+        title of the y axis
+        type: string
+    line_palette:
+        colors you want the lines to be
+        type: string listing color codes
+    what_style:
+        linestyle you want (ex. dashed or dotted)
+        type: string, look up linestyle matplotlib
+    Returns
+    ----------------
+    multiline figure showing change in LAI under each treatment condition over time
+    """ 
     plt.figure(dpi= 1200, figsize = (10,6))
     LAI_normtimeseries = sns.lineplot(data=normal_df, x="year", y= 'LAI', 
-                                      hue_order = ['0','2.25','4.5','6.75','9','control'], hue = 'temp', palette = line_palette)
-    plt.ylabel('Normalized Leaf Area Index (m${}^2$/m${}^2$)', fontsize = 14);
-    plt.xlabel("Year", fontsize = 14);
-    plt.legend(title = legend_title, loc='best')
-    plt.plot()
-    plt.ylim(0, 1)
-    return LAI_normtimeseries
-
-
-def LAInormal_sp_timeseries (normal_df, legend_title, y_title, line_palette, what_style):
-    plt.figure(dpi= 1200, figsize = (10,6))
-    LAI_norm_spr_timeseries = sns.lineplot(data=normal_df, x="year", y= 'LAI', 
                                       hue_order = ['0','2.25','4.5','6.75','9','control'], hue = 'temp', linestyle = what_style, 
                                       palette = line_palette)
     plt.ylabel(y_title, fontsize = 14);
     plt.xlabel("Year", fontsize = 14);
     legend = plt.legend(title = legend_title, loc='best')
     
-    styleofline = 'dashed'
+    styleofline = what_style
     for lines in legend.get_lines():
         lines.set_linestyle(styleofline)
         
     plt.plot()
     plt.ylim(0, 1)
-    return LAI_norm_spr_timeseries
+    return LAI_normtimeseries
 
+def three_axisfigure(dataframe, line_palette, temp_color):
+       """
+    Generate three axis figure of mean LAI and mean air temperature on two y axes and year on the x
+    
+    Parameters
+    ----------------
+    dataframe: 
+        dataframe of LAI values merged with the temperature data
+        type: pandas dataframe
+    line_palette:
+        palette to use 
+        type: string of colors or a palette name or a variable containing the palette 
+    temp_color:
+        the color of the mean temperature line
+        type: string of colors etc
+    Returns
+    ----------------
+    three axis line figure showing change in LAI and mean air temperature over time 
+    """
+    plt.figure(figsize = (10,6))
+    LAIplot = sns.lineplot(data=dataframe, x="year", y= 'LAI', markers = 'o', hue = 'carbon dioxide', palette = line_palette)
+    plt.legend(title = 'carbon dioxide', loc = 'upper left')
+    LAIplot.set_ylabel("LAI (m${}^2$/m${}^2$)", fontsize = 14)
+    
+    ax2 = plt.twinx()
+    TempPlot = sns.lineplot(data = dataframe, x = 'year', y = 'Mean Air Temp', color = temp_color, linestyle = 'dashed', alpha = 0.5, label = 'mean temperature')
+    plt.legend(loc = 'best')
+    TempPlot.set_ylabel("Mean Temperature ($^\circ$C)", fontsize = 14);
 
+   # def temp_regsfig()
