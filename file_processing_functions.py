@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+import warnings
 
 def stack_its(file_path, final_csv_name):
     """
@@ -114,3 +116,92 @@ def readfiles(filepath, unique_id):
             dataframe = pd.read_csv(final_file_path)
             dataframes_list_var.append(dataframe)
     return dataframes_list_var
+
+def normal_data(data_to_norm, filter_by_temp, what_temp, filter_by_co2, what_co2, cols_norm_name, file_outpath, csv_name):
+    """
+    Normalize a dataframe using the MinMaxScaler function from sklearn. Each group of LAI values is normalized by plot or the unique treatment conditions.
+    
+    Parameters
+    ----------------
+    data_to_norm:
+        the dataframe full of the data to normalize
+    type:
+        pandas dataframe
+    filter_by_temp:
+        the name of the temperature column, you could also go by a different column name if you wanted to normalize by something else
+    type:
+        string, ex: 'temp'
+    what_temp: 
+        the category of the data that it should be filtered by
+    type: 
+        string or number, ex: '0' or 0, just depends on the original df
+    filter_by_co2:
+        the name of the co2 treatment column
+    type: 
+        string
+    what_co2:
+        the category of the data in the co2 treatment column 
+    type:
+        string, ex: 'elevated' or 'ambient'
+    cols_norm_name: 
+        the column name that contains the data you want to normalize
+    type:
+        string, ex 'LAI'
+    file_outpath:
+        filepath to output the csv file
+    type:
+        string containing a file path
+    csv_name:
+        name of the csv file you want to call the results 
+    type:
+        string with the extension .csv
+    Returns
+    ----------------
+    csv file containing LAI data normalized by plot or treatment group 
+    """
+    filtered_1 = filter_df(data_to_norm, filter_by_temp, what_temp, exclude = False)
+    temp_df = filter_df(filtered_1, filter_by_co2, what_co2, exclude = False)
+    cols_to_norm = [cols_norm_name]
+    temp_df[cols_to_norm] = MinMaxScaler().fit_transform(temp_df[cols_to_norm])
+    warnings.filterwarnings('ignore')
+    return temp_df.to_csv(file_outpath + csv_name, index = False)
+
+def normal_data_CO2(data_to_norm, filter_by_co2, what_co2, cols_norm_name, file_outpath, csv_name):
+    """
+    Normalize a dataframe using the MinMaxScaler function from sklearn. Each group of LAI values is normalized by plot or the unique treatment conditions.
+    
+    Parameters
+    ----------------
+    data_to_norm:
+        the dataframe full of the data to normalize
+    type:
+        pandas dataframe
+    filter_by_co2:
+        the name of the co2 treatment column
+    type: 
+        string
+    what_co2:
+        the category of the data in the co2 treatment column 
+    type:
+        string, ex: 'elevated' or 'ambient'
+    cols_norm_name: 
+        the column name that contains the data you want to normalize
+    type:
+        string, ex 'LAI'
+    file_outpath:
+        filepath to output the csv file
+    type:
+        string containing a file path
+    csv_name:
+        name of the csv file you want to call the results 
+    type:
+        string with the extension .csv
+    Returns
+    ----------------
+    csv file containing LAI data normalized by plot or treatment group 
+    """
+    temp_df = filter_df(data_to_norm, filter_by_co2, what_co2, exclude = False)
+    cols_to_norm = [cols_norm_name]
+    temp_df[cols_to_norm] = MinMaxScaler().fit_transform(temp_df[cols_to_norm])
+    warnings.filterwarnings('ignore')
+    return temp_df.to_csv(file_outpath + csv_name, index = False)
